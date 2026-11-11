@@ -1158,4 +1158,21 @@ public class ValidatorTest {
         boolean isValid = v.isValidInput("RegexString", "&quot;test&quot;", "avaloqLooseSafeString", 2147483647, true, true);
         assertFalse(isValid);
     }
+
+    /**
+     * Validator.isValidSafeHTML has been removed because it could report
+     * unsafe HTML input as "safe" (the sanitized output was discarded). See
+     * GitHub Security Advisory
+     * https://github.com/ESAPI/esapi-java-legacy/security/advisories/GHSA-r68h-jhhj-9jvm
+     */
+    @Test
+    public void testIsValidSafeHTMLRemoved() {
+        Class<?>[] classes = { Validator.class, DefaultValidator.class, ESAPI.validator().getClass() };
+        for ( Class<?> clazz : classes ) {
+            for ( java.lang.reflect.Method m : clazz.getMethods() ) {
+                assertFalse(clazz.getName() + " must not expose " + m,
+                            "isValidSafeHTML".equals(m.getName()));
+            }
+        }
+    }
 }
