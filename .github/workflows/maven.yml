@@ -4,15 +4,18 @@
 name: Java CI with Maven
 
 on:
-  push:
-    branches: [ develop ]
-  pull_request:
-    branches: [ develop ]
+  workflow_dispatch:
+    inputs:
+      test-filter:
+        description: 'Optional surefire -Dtest selector (empty runs the full suite)'
+        required: false
+        default: ''
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
     - uses: actions/checkout@v2
@@ -21,4 +24,11 @@ jobs:
       with:
         java-version: 1.8
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run: mvn -B package --file pom.xml ${{ inputs.test-filter && format('-Dtest={0} -Dsurefire.failIfNoSpecifiedTests=false', inputs.test-filter) || '' }}
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: esapi-jars
+        path: |
+          target/esapi-*.jar
+        if-no-files-found: error
